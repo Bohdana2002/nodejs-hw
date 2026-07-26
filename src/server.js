@@ -1,8 +1,10 @@
 import express from 'express';
 import cors from 'cors';
+import pino from 'pino-http';
+import 'dotenv/config';
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT ?? 3000;
 
 app.use(cors());
 app.use(express.json());
@@ -28,8 +30,23 @@ app.get('/notes', (req, res) => {
 });
 
 app.get('/notes/:noteId', (req, res) => {
-  const { id_param } = req.params.noteId;
-  res.status(200).json({ message: `Retrieved note with ID: ${id_param}` });
+  const { noteId } = req.params;
+  res.status(200).json({ message: `Retrieved note with ID: ${noteId}` });
+});
+
+//test for error
+app.get('/test-error', (req, res) => {
+  throw new Error('Simulated server error');
+});
+
+//для неіснуючих шляхів
+app.use((req, res) => {
+  res.status(404).json({ message: 'Route not found' });
+});
+
+//обробка помилок
+app.use((err, req, res, next) => {
+  res.status(500).json({ message: err.message });
 });
 
 app.listen(PORT, () => {
